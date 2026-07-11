@@ -5,6 +5,8 @@
 //  Created by Tuong Vi on 8/7/26.
 //
 
+import Foundation
+
 struct Movie: Identifiable, Codable {
     let id = UUID()
     var title: String
