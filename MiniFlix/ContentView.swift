@@ -15,18 +15,31 @@ struct ContentView: View {
         voteAverage: 3.5
         
     )
+    
+    @State private var totalVotes: Int = 0
+    
     var body: some View {
+        let _ = Self._printChanges()
+        
         MovieCardView(movie: movieSample)
+        VStack {
+            Button("Bấm để vote tổng: \(totalVotes)") {
+                totalVotes += 1
+            }
+        }
     }
+    
 }
 
 struct MovieCardView: View{
     let movie: Movie
     var body: some View {
+        let _ = Self._printChanges()
         VStack{
             HStack{
                 Image(systemName: "film")
                     .font(.system(size: 60))
+                
                 
                 VStack{
                     Text(movie.title)
