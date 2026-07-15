@@ -39,4 +39,14 @@ struct MovieDetailView: View {
     }
 }
 
-
+#Preview {
+    // Bọc trong NavigationStack để hiển thị navigationTitle
+    NavigationStack {
+        MovieDetailView(movie: Movie(
+            title: "The Dark Knight",
+            overview: "Batman đối đầu Joker, tên tội phạm muốn nhấn chìm Gotham vào hỗn loạn.",
+            posterPath: nil,
+            voteAverage: 9.0
+        ))
+    }
+}
