@@ -13,4 +13,5 @@ struct Movie: Identifiable, Codable {
     var overview: String
     var posterPath: String?
     var voteAverage: Double
+    var isFavorite: Bool = false
 }
