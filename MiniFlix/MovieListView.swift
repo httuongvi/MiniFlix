@@ -111,30 +111,64 @@ struct MovieCardView: View{
 struct MovieListView: View {
     private let service = TMDBService()
     
-    @State private var movieSamples: [Movie] = []
+    @State var viewModel = MovieListViewModel()
     
     @State private var searchQuery = ""
     @State private var isShowingSearch: Bool = false
     @State private var isShowingAlert: Bool = false
-    var filteredMovies: [Movie] {
-        return searchQuery.isEmpty ? movieSamples : movieSamples.filter{$0.title.localizedCaseInsensitiveContains(searchQuery)}
-    }
+    //    var filteredMovies: [Movie] {
+    //        return searchQuery.isEmpty ? movieSamples : movieSamples.filter{$0.title.localizedCaseInsensitiveContains(searchQuery)}
+    //    }
     ///////
     var body: some View {
         let _ = Self._printChanges()
         NavigationStack{
-            List(){
-                ForEach(filteredMovies){movie in
-                    NavigationLink(destination: MovieDetailView(movie: movie)){
-                        MovieCardView(
-                            movie: movie,
-                            onDelete: {movie in deleteMovie(movie)},
-                            onFavorite: {movie in toggleFavorite(movie)}
-                        )
+            Group{
+                switch viewModel.state{
+                case .idle:
+                    Color.clear
+                case .loading:
+                    ProgressView()
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                case .loaded(let movies):
+                    List(){
+                        ForEach(movies){movie in
+                            NavigationLink(destination: MovieDetailView(movie: movie)){
+                                MovieCardView(
+                                    movie: movie,
+                                    onDelete: {movie in viewModel.deleteMovie(movie)},
+                                    onFavorite: {movie in viewModel.toggleFavorite(movie)}
+                                )
+                            }
+                        }
                     }
+                    .listStyle(.insetGrouped)
+                    .refreshable {
+                        await viewModel.refresh()
+                    }
+                case .empty:
+                    VStack(spacing: 12) {
+                        Image(systemName: "film.stack")
+                            .font(.system(size: 60))
+                            .foregroundColor(.gray)
+                        Text("Không có bộ phim nào hiển thị.")
+                            .font(.headline)
+                            .foregroundColor(.gray)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                case .error(let message):
+                    VStack(spacing: 12) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .font(.system(size: 60))
+                            .foregroundColor(.gray)
+                        Text("Đã xảy ra lỗi.")
+                            .font(.headline)
+                            .foregroundColor(.gray)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    
                 }
             }
-            .listStyle(.insetGrouped)
             .navigationTitle("MiniFlix")
             .toolbar{
                 Button{
@@ -144,85 +178,53 @@ struct MovieListView: View {
                 }
             }
             .task {
-                await loadPopularMovies()
+                await viewModel.loadPopularMovies()
             }
         }
         .sheet(isPresented: $isShowingSearch){
             SearchSheetView(
-                searchQuery: $searchQuery,
-                onSearch: { await onSearch()}
+                viewModel: viewModel
             )
         }
     }
     
     //////
-    func deleteMovie(_ movie: Movie) {
-        if let index = movieSamples.firstIndex(where: {$0.id == movie.id}){
-            movieSamples.remove(at: index)
-        }
-    }
-
-    func toggleFavorite(_ movie: Movie) {
-        if let index = movieSamples.firstIndex(where: {$0.id == movie.id}){
-            movieSamples[index].isFavorite.toggle()
-        }
-    }
     
-    @MainActor
-    private func loadPopularMovies() async {
-        guard movieSamples.isEmpty else { return }
-        do{
-            let fetchedMovies = try await service.fetchPopular()
-            self.movieSamples = fetchedMovies
-        } catch{
-            print("Đã xảy ra lỗi khi load danh sách phim phổ biến: \(error)")
-        }
-    }
     
-    @MainActor
-    private func onSearch() async {
-        guard !searchQuery.isEmpty else {
-            return
-        }
+    
+    ////////////////
+    struct SearchSheetView: View{
+        @Environment(\.dismiss) var dismiss
         
-        do{
-            let searchRusults = try await service.searchMovies(query: searchQuery)
-            self.movieSamples = searchRusults
-        } catch {
-            print("Lỗi tìm kiếm: \(error)")
+        var viewModel: MovieListViewModel
+        
+        var body: some View{
+            @Bindable var bviewModel = viewModel
+            NavigationStack{
+                Text("Tìm kiếm phim")
+                    .font(.headline)
+                    .padding(.top)
+                
+                TextField("Tên phim...", text: $bviewModel.searchQuery)
+                    .textFieldStyle(.roundedBorder)
+                    .padding(.horizontal)
+                
+                Button("Tìm"){
+                    Task{
+                        await viewModel.onSearch()
+                        dismiss()
+                    }
+                }
+                .buttonStyle(.borderedProminent)
+                Spacer()
+            }.padding()
         }
     }
-    
-    
 }
 
 
-////////////////
-struct SearchSheetView: View{
-    @Environment(\.dismiss) var dismiss
-    @Binding var searchQuery: String
-    var onSearch: () async -> Void
-    
-    var body: some View{
-        NavigationStack{
-            Text("Tìm kiếm phim")
-                .font(.headline)
-                .padding(.top)
-            
-            TextField("Tên phim...", text: $searchQuery)
-                .textFieldStyle(.roundedBorder)
-                .padding(.horizontal)
-            
-            Button("Tìm"){
-                Task{
-                    await onSearch()
-                    dismiss()
-                }
-            }
-            .buttonStyle(.borderedProminent)
-            Spacer()
-        }.padding()
-    }
+#Preview() {
+    MovieListView()
 }
 
 
