@@ -33,26 +33,26 @@ struct DrillDay4FixUnwrap: View {
     }
 }
 
-var movies : [Movie] = [
-    Movie(title: "movie one", overview: "overview one", voteAverage: 5.5),
-    Movie(title: "movie two", overview: "overview two", voteAverage: 6.5),
-    Movie(title: "movie three", overview: "overview three", voteAverage: 7.0),
-    Movie(title: "movie four", overview: "overview four", voteAverage: 6.5),
-    Movie(title: "movie five", overview: "overview five", voteAverage: 5.5),
-    Movie(title: "movie six", overview: "overview six", voteAverage: 8.5),
-    Movie(title: "movie seven", overview: "overview seven", voteAverage: 7.0),
-    Movie(title: "movie eight", overview: "overview eight", voteAverage: 6.5)
-]
+//var movies : [Movie] = [
+//    Movie(title: "movie one", overview: "overview one", voteAverage: 5.5),
+//    Movie(title: "movie two", overview: "overview two", voteAverage: 6.5),
+//    Movie(title: "movie three", overview: "overview three", voteAverage: 7.0),
+//    Movie(title: "movie four", overview: "overview four", voteAverage: 6.5),
+//    Movie(title: "movie five", overview: "overview five", voteAverage: 5.5),
+//    Movie(title: "movie six", overview: "overview six", voteAverage: 8.5),
+//    Movie(title: "movie seven", overview: "overview seven", voteAverage: 7.0),
+//    Movie(title: "movie eight", overview: "overview eight", voteAverage: 6.5)
+//]
 
-struct DrillDay4ConditionalBreakpoint: View {
-    var body: some View {
-        Button("Xem tên phim") {
-            for movie in movies {
-                print(movie.title)
-            }
-        }
-    }
-}
+//struct DrillDay4ConditionalBreakpoint: View {
+//    var body: some View {
+//        Button("Xem tên phim") {
+//            for movie in movies {
+//                print(movie.title)
+//            }
+//        }
+//    }
+//}
 
 
 

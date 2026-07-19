@@ -14,11 +14,36 @@ struct MovieCardView: View{
         let _ = Self._printChanges()
         VStack{
             HStack{
-                Image(systemName: "film")
-                    .font(.system(size: 40))
-                    .frame(width: 70, height: 100)
-                    .background(.gray.opacity(0.3))
-                
+                if let posterPath = movie.posterPath{
+                    let urlPoster = URL(string: "https://image.tmdb.org/t/p/w500/\(posterPath)")
+                    AsyncImage(url: urlPoster){phase in
+                        switch phase{
+                        case .empty:
+                            ProgressView()
+                                .frame(width: 70, height: 100)
+                                .foregroundColor(.gray.opacity(0.4))
+                        case .success(let image):
+                            image
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                                .frame(width: 70, height: 100)
+                                .clipped()
+                        case .failure:
+                            Image(systemName: "exclamationmark.triangle")
+                                .font(.system(size: 40))
+                                .frame(width: 70, height: 100)
+                                .background(.gray.opacity(0.3))
+                        
+                        @unknown default:
+                            EmptyView()
+                        }
+                    }
+                } else {
+                    Image(systemName: "film")
+                        .font(.system(size: 40))
+                        .frame(width: 70, height: 100)
+                        .background(.gray.opacity(0.3))
+                }
                 
                 VStack(alignment: .leading, spacing: 6){
                     Text(movie.title)
@@ -46,7 +71,7 @@ struct MovieCardView: View{
                 }
                 
                 HStack (spacing: 2){
-                    Text(String(movie.voteAverage))
+                    Text(String(format: "%.1f", movie.voteAverage))
                         .font(.headline)
                     Image(systemName: "star.fill")
                         .foregroundColor(.yellow)
@@ -84,69 +109,9 @@ struct MovieCardView: View{
 }
 
 struct MovieListView: View {
-    @State private var movieSamples: [Movie] = [
-        Movie(
-            title: "The Dark Knight",
-            overview: "Batman faces the Joker, a criminal mastermind who wants to plunge Gotham City into chaos.",
-            posterPath: nil,
-            voteAverage: 9.0
-        ),
-        Movie(
-            title: "Inception",
-            overview: "A skilled thief enters people's dreams to steal secrets but is given one final impossible mission.",
-            posterPath: nil,
-            voteAverage: 6.8
-        ),
-        Movie(
-            title: "Interstellar",
-            overview: "A team of astronauts travels through a wormhole in search of a new home for humanity.",
-            posterPath: nil,
-            voteAverage: 8.7
-        ),
-        Movie(
-            title: "Avengers: Endgame",
-            overview: "The Avengers assemble for one final battle to undo the devastation caused by Thanos.",
-            posterPath: nil,
-            voteAverage: 8.4
-        ),
-        Movie(
-            title: "Parasite",
-            overview: "A poor family gradually infiltrates the lives of a wealthy household with unexpected consequences.",
-            posterPath: nil,
-            voteAverage: 8.6
-        ),
-        Movie(
-            title: "Spider-Man: No Way Home",
-            overview: "Peter Parker seeks help from Doctor Strange, leading to unexpected multiverse events.",
-            posterPath: nil,
-            voteAverage: 8.3
-        ),
-        Movie(
-            title: "The Shawshank Redemption",
-            overview: "A banker imprisoned for a crime he didn't commit forms a lasting friendship and never loses hope.",
-            posterPath: nil,
-            voteAverage: 9.3
-        ),
-        Movie(
-            title: "The Matrix",
-            overview: "A hacker discovers the shocking truth about reality and joins the fight against intelligent machines.",
-            posterPath: nil,
-            voteAverage: 8.7
-        ),
-        Movie(
-            title: "Titanic",
-            overview: "A timeless romance blossoms aboard the ill-fated RMS Titanic.",
-            posterPath: nil,
-            voteAverage: 5.9
-        ),
-        Movie(
-            title: "Dune",
-            overview: "Paul Atreides embarks on a journey across the desert planet Arrakis to fulfill his destiny.",
-            posterPath: nil,
-            voteAverage: 8.2
-        )
-    ]
-    ///////////
+    private let service = TMDBService()
+    
+    @State private var movieSamples: [Movie] = []
     
     @State private var searchQuery = ""
     @State private var isShowingSearch: Bool = false
@@ -178,9 +143,15 @@ struct MovieListView: View {
                     Image(systemName: "magnifyingglass")
                 }
             }
+            .task {
+                await loadPopularMovies()
+            }
         }
         .sheet(isPresented: $isShowingSearch){
-            SearchSheetView(searchQuery: $searchQuery)
+            SearchSheetView(
+                searchQuery: $searchQuery,
+                onSearch: { await onSearch()}
+            )
         }
     }
     
@@ -197,12 +168,40 @@ struct MovieListView: View {
         }
     }
     
+    @MainActor
+    private func loadPopularMovies() async {
+        guard movieSamples.isEmpty else { return }
+        do{
+            let fetchedMovies = try await service.fetchPopular()
+            self.movieSamples = fetchedMovies
+        } catch{
+            print("Đã xảy ra lỗi khi load danh sách phim phổ biến: \(error)")
+        }
+    }
+    
+    @MainActor
+    private func onSearch() async {
+        guard !searchQuery.isEmpty else {
+            return
+        }
+        
+        do{
+            let searchRusults = try await service.searchMovies(query: searchQuery)
+            self.movieSamples = searchRusults
+        } catch {
+            print("Lỗi tìm kiếm: \(error)")
+        }
+    }
+    
     
 }
 
+
+////////////////
 struct SearchSheetView: View{
     @Environment(\.dismiss) var dismiss
     @Binding var searchQuery: String
+    var onSearch: () async -> Void
     
     var body: some View{
         NavigationStack{
@@ -215,10 +214,15 @@ struct SearchSheetView: View{
                 .padding(.horizontal)
             
             Button("Tìm"){
-                dismiss()
+                Task{
+                    await onSearch()
+                    dismiss()
+                }
             }
             .buttonStyle(.borderedProminent)
             Spacer()
         }.padding()
     }
 }
+
+
