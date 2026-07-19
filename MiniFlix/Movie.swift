@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftData
 
 struct TMDBResponse: Codable {
     let results: [Movie]
@@ -26,4 +27,24 @@ struct Movie: Identifiable, Codable {
         case posterPath = "poster_path"
         case voteAverage = "vote_average"
     }
+}
+
+@Model
+class FavoriteMovieItem{
+    @Attribute(.unique) var id: Int
+    var title: String
+    var overview: String
+    var posterPath: String?
+    var voteAverage: Double
+    var timestamp: Date
+    
+    init(id: Int, title: String, overview: String, posterPath: String? = nil, voteAverage: Double) {
+        self.id = id
+        self.title = title
+        self.overview = overview
+        self.posterPath = posterPath
+        self.voteAverage = voteAverage
+        self.timestamp = Date()
+    }
+    
 }

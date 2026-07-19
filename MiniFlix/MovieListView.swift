@@ -8,8 +8,6 @@
 import SwiftUI
 struct MovieCardView: View{
     let movie: Movie
-    let onDelete: (Movie) -> Void
-    let onFavorite: (Movie) -> Void
     var body: some View {
         let _ = Self._printChanges()
         VStack{
@@ -59,17 +57,6 @@ struct MovieCardView: View{
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 
-                if movie.isFavorite{
-                    VStack(){
-                        Image(systemName: "heart.fill")
-                            .font(.caption)
-                            .foregroundColor(.red)
-                    }
-                    .frame(maxHeight: .infinity, alignment: .top)
-                    .padding(.top, 15)
-                    
-                }
-                
                 HStack (spacing: 2){
                     Text(String(format: "%.1f", movie.voteAverage))
                         .font(.headline)
@@ -84,27 +71,6 @@ struct MovieCardView: View{
             .clipShape(RoundedRectangle(cornerRadius: 12))
             .shadow(radius: 3)
         }
-        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-            Button(role: .destructive) {
-                onDelete(movie)
-            } label: {
-                Label("Xoá", systemImage: "trash")
-            }
-        }
-        
-        .swipeActions(edge: .leading){
-            Button {
-               onFavorite(movie)
-            } label: {
-                Label(
-                    movie.isFavorite ? "Bỏ thích" : "Thích",
-                    systemImage: movie.isFavorite ? "heart.slash" : "heart"
-                )
-            }
-            .tint(.pink)
-        }
-                 
-                 
     }
 }
 
@@ -133,12 +99,22 @@ struct MovieListView: View {
                 case .loaded(let movies):
                     List(){
                         ForEach(movies){movie in
-                            NavigationLink(destination: MovieDetailView(movie: movie)){
+                            NavigationLink(destination: MovieDetailView(movie: FavoriteMovieItem(
+                                id: movie.id,
+                                title: movie.title,
+                                overview: movie.overview,
+                                posterPath: movie.posterPath,
+                                voteAverage: movie.voteAverage
+                            ))){
                                 MovieCardView(
-                                    movie: movie,
-                                    onDelete: {movie in viewModel.deleteMovie(movie)},
-                                    onFavorite: {movie in viewModel.toggleFavorite(movie)}
+                                    movie: movie
                                 )
+                            }.swipeActions {
+                                Button(role: .destructive) {
+                                    viewModel.deleteMovie(movie)
+                                } label: {
+                                    Label("Xóa", systemImage: "trash")
+                                }
                             }
                         }
                     }

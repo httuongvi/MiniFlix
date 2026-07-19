@@ -60,16 +60,6 @@ class MovieListViewModel{
             }
         }
     }
-
-    func toggleFavorite(_ movie: Movie) {
-        if case .loaded(var currentMovies) = state{
-            if let index = currentMovies.firstIndex(where: {$0.id == movie.id}){
-                currentMovies[index].isFavorite.toggle()
-                
-                state = .loaded(currentMovies)
-            }
-        }
-    }
         
     
     

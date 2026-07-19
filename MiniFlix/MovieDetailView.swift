@@ -6,10 +6,20 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct MovieDetailView: View {
-    let movie: Movie
+    let movie: FavoriteMovieItem
+    
+    @Environment(\.modelContext) private var modelContext
+    
+    @Query private var favoriteMovies: [FavoriteMovieItem]
+    
+    @State private var viewModel: MovieDetailViewModel = MovieDetailViewModel()
+    
+    
     var body: some View {
+        let isFavorite = favoriteMovies.contains(where: { $0.id == movie.id })
         VStack{
             Text(movie.title)
                 .font(.largeTitle)
@@ -58,6 +68,21 @@ struct MovieDetailView: View {
                     .font(.system(size: 20))
                     .foregroundColor(.yellow)
             }
+            
+            Spacer()
+            
+            Button(action: {viewModel.toggleFavorite(modelContext: modelContext, movie: movie, isFavorite: isFavorite, favoriteMovies: favoriteMovies )}
+                ){
+                Image(systemName: isFavorite ? "heart.fill" : "heart")
+                    .foregroundColor(isFavorite ? .red : .gray)
+                    .font(.system(size: 30))
+            }
+            .padding(10)
+            .frame(width: 100, height: 50)
+            .background(Color.pink.opacity(0.2))
+            .cornerRadius(10)
+            
+            
         }
         .padding(20)
         .frame(maxHeight: .infinity, alignment: .top)
@@ -66,15 +91,16 @@ struct MovieDetailView: View {
     }
 }
 
+
 #Preview {
-    // Bọc trong NavigationStack để hiển thị navigationTitle
     NavigationStack {
-        MovieDetailView(movie: Movie(
+        MovieDetailView(movie: FavoriteMovieItem(
             id: 1,
             title: "The Dark Knight",
             overview: "Batman đối đầu Joker, tên tội phạm muốn nhấn chìm Gotham vào hỗn loạn.",
             posterPath: nil,
             voteAverage: 9.0
         ))
+        .modelContainer(for: FavoriteMovieItem.self)
     }
 }
