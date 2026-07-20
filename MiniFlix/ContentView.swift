@@ -40,7 +40,7 @@ struct MaintabView: View {
                 }
                 .tag(0)
             
-            FavoriteMovieView()
+            MovieFavoriteListView()
                 .tabItem{
                     Label("Yêu thích", systemImage: "heart.fill")
                 }
@@ -49,13 +49,7 @@ struct MaintabView: View {
     }
 }
 
-struct FavoriteMovieView: View {
-    var body: some View {
-        Text("Favorite Movie View")
-            .font(.largeTitle)
-            .bold()
-    }
-}
+
 
 #Preview {
     ContentView()
