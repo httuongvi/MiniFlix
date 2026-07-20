@@ -30,6 +30,11 @@ struct MovieFavoriteListView: View {
                             .foregroundColor(.gray)
                     }
                 } else {
+                    Text("Đã lưu \(favoriteMovies.count) phim yêu thích")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                            .padding(.top, 8)
+                    
                     List {
                         ForEach(favoriteMovies) { item in
                             NavigationLink(destination: MovieDetailView(movie: item)) {
