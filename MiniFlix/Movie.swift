@@ -19,6 +19,7 @@ struct Movie: Identifiable, Codable {
     var posterPath: String?
     var voteAverage: Double
     var isFavorite: Bool = false
+    var releaseDate: String?
     
     enum CodingKeys: String, CodingKey {
         case id
@@ -26,6 +27,7 @@ struct Movie: Identifiable, Codable {
         case overview
         case posterPath = "poster_path"
         case voteAverage = "vote_average"
+        case releaseDate = "release_date"
     }
 }
 
@@ -36,14 +38,16 @@ class FavoriteMovieItem{
     var overview: String
     var posterPath: String?
     var voteAverage: Double
+    var releaseDate: String?
     var timestamp: Date
     
-    init(id: Int, title: String, overview: String, posterPath: String? = nil, voteAverage: Double) {
+    init(id: Int, title: String, overview: String, posterPath: String? = nil, voteAverage: Double, releaseDate: String? = nil) {
         self.id = id
         self.title = title
         self.overview = overview
         self.posterPath = posterPath
         self.voteAverage = voteAverage
+        self.releaseDate = releaseDate
         self.timestamp = Date()
     }
     

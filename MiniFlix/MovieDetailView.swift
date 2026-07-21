@@ -60,6 +60,19 @@ struct MovieDetailView: View {
             Text(movie.overview)
                 .font(.body)
             
+            
+            if let releaseDateString = movie.releaseDate, let date = releaseDateString.toDate {
+                HStack{
+                    Image(systemName: "calendar")
+                        .foregroundColor(.gray)
+                    
+                    Text(date, format: .dateTime.month().day().year())
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }.padding(10)
+            }
+            
+            
             HStack(alignment: .center, spacing: 10){
                 Text("\(String(format: "%.1f",movie.voteAverage))/10")
                     .font(.headline)
@@ -99,7 +112,8 @@ struct MovieDetailView: View {
             title: "The Dark Knight",
             overview: "Batman đối đầu Joker, tên tội phạm muốn nhấn chìm Gotham vào hỗn loạn.",
             posterPath: nil,
-            voteAverage: 9.0
+            voteAverage: 9.0,
+            releaseDate: "2020/08/01"
         ))
         .modelContainer(for: FavoriteMovieItem.self)
     }

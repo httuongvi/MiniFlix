@@ -26,12 +26,13 @@ class MovieListViewModel{
     
     var searchQuery: String = ""
     
-    func loadPopularMovies() async {
-        
-        guard case .idle = state else {
-            return
+    func loadPopularMovies(force: Bool) async {
+        if !force {
+            guard case .idle = state else {
+                return
+            }
         }
-
+        print("Đang load popular")
         state = .loading
         
         do{
@@ -46,20 +47,6 @@ class MovieListViewModel{
             state = .error(error.localizedDescription)
         }
     }
-    
-    func deleteMovie(_ movie: Movie) {
-        if case .loaded(var currentMovies) = state {
-            if let index = currentMovies.firstIndex(where: {$0.id == movie.id}){
-                currentMovies.remove(at: index)
-                
-                if currentMovies.isEmpty{
-                    state = .empty
-                } else{
-                    state = .loaded(currentMovies)
-                }
-            }
-        }
-    }
         
     
     
@@ -72,6 +59,7 @@ class MovieListViewModel{
         if case .loading = state {
             return
         }
+        print("Đang load search")
         state = .loading
         
         do{
@@ -89,18 +77,10 @@ class MovieListViewModel{
     
     @MainActor
     func refresh() async{
-        state = .loading
-        
-        do{
-            let fetchedMovies = try await service.fetchPopular()
-            
-            if fetchedMovies.isEmpty{
-                state = .empty
-            } else {
-                state = .loaded(fetchedMovies)
-            }
-        } catch {
-            state = .error(error.localizedDescription)
+        if searchQuery.isEmpty{
+            await loadPopularMovies(force: true)
+        } else {
+            await onSearch()
         }
     }
     

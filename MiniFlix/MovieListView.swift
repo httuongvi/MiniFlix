@@ -109,12 +109,6 @@ struct MovieListView: View {
                                 MovieCardView(
                                     movie: movie
                                 )
-                            }.swipeActions {
-                                Button(role: .destructive) {
-                                    viewModel.deleteMovie(movie)
-                                } label: {
-                                    Label("Xóa", systemImage: "trash")
-                                }
                             }
                         }
                     }
@@ -137,9 +131,15 @@ struct MovieListView: View {
                         Image(systemName: "exclamationmark.triangle.fill")
                             .font(.system(size: 60))
                             .foregroundColor(.gray)
-                        Text("Đã xảy ra lỗi.")
+                        Text("Đã xảy ra lỗi.\(message)")
                             .font(.headline)
                             .foregroundColor(.gray)
+                        
+                        Button("Thử lại"){
+                            Task{
+                                await viewModel.refresh()
+                            }
+                        }
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     
@@ -154,7 +154,7 @@ struct MovieListView: View {
                 }
             }
             .task {
-                await viewModel.loadPopularMovies()
+                await viewModel.loadPopularMovies(force: false)
             }
         }
         .sheet(isPresented: $isShowingSearch){
