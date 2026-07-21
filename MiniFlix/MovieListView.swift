@@ -154,7 +154,7 @@ struct MovieListView: View {
                 }
             }
             .task {
-                await viewModel.loadPopularMovies()
+                await viewModel.loadPopularMovies(force: false)
             }
         }
         .sheet(isPresented: $isShowingSearch){

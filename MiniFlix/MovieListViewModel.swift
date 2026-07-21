@@ -26,12 +26,13 @@ class MovieListViewModel{
     
     var searchQuery: String = ""
     
-    func loadPopularMovies() async {
-        
-        guard case .idle = state else {
-            return
+    func loadPopularMovies(force: Bool) async {
+        if !force {
+            guard case .idle = state else {
+                return
+            }
         }
-
+        print("Đang load popular")
         state = .loading
         
         do{
@@ -58,6 +59,7 @@ class MovieListViewModel{
         if case .loading = state {
             return
         }
+        print("Đang load search")
         state = .loading
         
         do{
@@ -76,9 +78,9 @@ class MovieListViewModel{
     @MainActor
     func refresh() async{
         if searchQuery.isEmpty{
-            await onSearch()
+            await loadPopularMovies(force: true)
         } else {
-            await loadPopularMovies()
+            await onSearch()
         }
     }
     
