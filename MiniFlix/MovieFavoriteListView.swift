@@ -64,6 +64,18 @@ struct MovieFavoriteListView: View {
                 }
             }
             .navigationTitle("Phim yêu thích")
+            .toolbar{
+                Button{
+                    NotificationManager.shared.scheduleLocalNotification(
+                        title: "MiniFlix Nhắc Bạn",
+                        body: "Đừng quên quay lại xem các bộ phim bạn đã lưu nhé!",
+                        timeInterval: 10,
+                        movieId: favoriteMovies.first?.id)
+                    NotificationManager.shared.scheduleCalendarNotification(title: "MiniFlix Nhắc Bạn", body: "Đừng quên quay lại xem các bộ phim bạn đã lưu nhé!", hour: 18, minute: 40, movieId: favoriteMovies.first?.id)
+                } label: {
+                    Image(systemName: "bell.badge")
+                }
+            }
         }
     }
 }

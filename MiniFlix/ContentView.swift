@@ -6,10 +6,13 @@
 //
 
 import SwiftUI
+import _SwiftData_SwiftUI
 
 struct ContentView: View {
     ///////////////////////////
     @State private var totalVotes: Int = 0
+    
+    
     
     
     
@@ -34,6 +37,9 @@ struct MaintabView: View {
     @State private var selectedTab: Int = 0
     @AppStorage("lastSelectedTab") private var lastSelectedTab: Int = 0
     @AppStorage("backgroundTime") private var backgroundTime: Double = 0
+    @State private var notificationManager = NotificationManager.shared
+    @Query private var favoriteMovies: [FavoriteMovieItem]
+    
     var body: some View {
         let _ = Self._printChanges()
         TabView(selection: $selectedTab) {
@@ -62,6 +68,22 @@ struct MaintabView: View {
                 }
             default:
                 break
+            }
+        }
+        .sheet(item: Binding(
+            get: {
+                if let id = notificationManager.selectedMovieId {
+                    let movie = favoriteMovies.first(where: { $0.id == id })!
+                    return movie
+                }
+                return nil
+            },
+            set: { _ in
+                notificationManager.selectedMovieId = nil
+            }
+        )) { movieItem in
+            NavigationStack {
+                MovieDetailView(movie: movieItem)
             }
         }
     }

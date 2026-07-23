@@ -1,0 +1,12 @@
+{
+   "Simulator Target Bundle": "com.tuongvi.MiniFlix",
+   "aps": {
+      "alert": {
+         "title": "Phim HOT hôm nay",
+         "body": "Đừng bỏ lỡ bộ phim hành động đỉnh cao vừa cập nhật!"
+      },
+      "badge": 1,
+      "sound": "default"
+   },
+   "movieId": 550
+}
