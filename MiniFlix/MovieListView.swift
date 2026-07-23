@@ -82,6 +82,7 @@ struct MovieListView: View {
     @State private var searchQuery = ""
     @State private var isShowingSearch: Bool = false
     @State private var isShowingAlert: Bool = false
+    @State private var notificationManager = NotificationManager.shared
     
     @Environment(\.scenePhase) private var scenePhase
     @AppStorage("backgroundTime") private var backgroundTime: Double = 0
@@ -166,7 +167,7 @@ struct MovieListView: View {
                 case .active:
                     let currentTime = Date().timeIntervalSince1970
                     let passedTime = currentTime - backgroundTime
-                    if backgroundTime > 0 && passedTime > 10 {
+                    if backgroundTime > 0 && passedTime > 60 {
                         print("Over 1m")
                         viewModel.searchQuery = ""
                         Task{
@@ -187,6 +188,14 @@ struct MovieListView: View {
                 viewModel: viewModel
             )
         }
+        .alert("Quyền Thông Báo Bị Tắt", isPresented: $notificationManager.showSettingAlert) {
+                    Button("Mở Cài đặt") {
+                        notificationManager.oppenAppSettings()
+                    }
+                    Button("Đóng", role: .cancel) { }
+                } message: {
+                    Text("Bạn đã từ chối quyền thông báo. Vui lòng bật lại thông báo trong Cài đặt máy để không bỏ lỡ lịch nhắc xem phim!")
+                }
     }
     
     //////

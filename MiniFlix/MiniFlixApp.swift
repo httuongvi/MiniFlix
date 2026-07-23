@@ -16,6 +16,9 @@ struct MiniFlixApp: App {
         WindowGroup {
             ContentView()
                 .modelContainer(for: FavoriteMovieItem.self)
+                .onAppear {
+                    NotificationManager.shared.requestAuthorization()
+                }
         }
         .onChange(of: scenePhase){
             switch scenePhase {
