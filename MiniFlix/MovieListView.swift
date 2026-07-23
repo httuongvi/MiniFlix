@@ -82,10 +82,12 @@ struct MovieListView: View {
     @State private var searchQuery = ""
     @State private var isShowingSearch: Bool = false
     @State private var isShowingAlert: Bool = false
-    //    var filteredMovies: [Movie] {
-    //        return searchQuery.isEmpty ? movieSamples : movieSamples.filter{$0.title.localizedCaseInsensitiveContains(searchQuery)}
-    //    }
-    ///////
+    
+    @Environment(\.scenePhase) private var scenePhase
+    @AppStorage("backgroundTime") private var backgroundTime: Double = 0
+    @AppStorage("lastSearchQuery") private var lastSearchQuery: String = ""
+    
+    
     var body: some View {
         let _ = Self._printChanges()
         NavigationStack{
@@ -156,6 +158,29 @@ struct MovieListView: View {
             .task {
                 await viewModel.loadPopularMovies(force: false)
             }
+            .onChange(of: scenePhase){oldValue, newValue in
+                switch newValue{
+                case .background:
+                    lastSearchQuery = viewModel.searchQuery
+                    print("Saved search query")
+                case .active:
+                    let currentTime = Date().timeIntervalSince1970
+                    let passedTime = currentTime - backgroundTime
+                    if backgroundTime > 0 && passedTime > 10 {
+                        print("Over 1m")
+                        viewModel.searchQuery = ""
+                        Task{
+                            await viewModel.refresh()
+                        }
+                    } else {
+                        viewModel.searchQuery = lastSearchQuery
+                    }
+                default:
+                    break
+                
+                }
+                
+            }
         }
         .sheet(isPresented: $isShowingSearch){
             SearchSheetView(
@@ -171,6 +196,7 @@ struct MovieListView: View {
     ////////////////
     struct SearchSheetView: View{
         @Environment(\.dismiss) var dismiss
+        @Environment(\.scenePhase) private var scenePhase
         
         var viewModel: MovieListViewModel
         
